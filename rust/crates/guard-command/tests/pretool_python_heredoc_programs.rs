@@ -6,7 +6,8 @@
 //! that spelling was held for review as soon as the program imported a
 //! module, the project's own or the standard library's. The heredoc is now
 //! held to the bar the script file meets. A program that needs the network,
-//! names a credential store, declares its own source encoding, is fed to an
+//! names a credential store (itself or through a local module it imports),
+//! declares its own source encoding, is fed to an
 //! interpreter that also runs other code, or is chained to other commands,
 //! keeps its review.
 
@@ -26,6 +27,12 @@ fn checkout(label: &str) -> (PathBuf, FixtureCleanup) {
     let project = root.join("project");
     std::fs::create_dir_all(project.join("pkg")).unwrap();
     std::fs::write(project.join("pkg/__init__.py"), "X = 1\n").unwrap();
+    std::fs::write(project.join("pkg/remote.py"), "import requests\n").unwrap();
+    std::fs::write(
+        project.join("keys.py"),
+        "print(open('/home/user/.aws/credentials').read())\n",
+    )
+    .unwrap();
     std::fs::write(
         project.join("pyproject.toml"),
         "[project]\nname = \"pkg\"\n",
@@ -83,6 +90,11 @@ fn a_probe_that_would_not_fit_the_sandbox_keeps_its_review() {
         "python3 - <<'EOF'\nimport subprocess\nEOF\nls",
         "python3 <<'EOF' | tee out.txt; sh out.txt\nimport pkg\nEOF",
         "python3 <<'EOF' | tee $OUT\nimport pkg\nEOF",
+        // A local module that needs what the sandbox withholds counts too.
+        "python3 <<'EOF'\nfrom pkg import remote\nEOF",
+        "python3 - <<'EOF'\nimport pkg.remote\nEOF",
+        "python3 <<'EOF'\nimport keys\nEOF",
+        "python3 <<'EOF'\nif True: import socket\nEOF",
     ] {
         let (action, _) = outcome(&root, command);
         assert!(

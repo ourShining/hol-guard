@@ -61,9 +61,10 @@ pub(in crate::pretool) enum Language {
 /// Network clients a script imports or calls.
 static PYTHON_NETWORK: LazyLock<Regex> = LazyLock::new(|| {
     let clients = "socket|ssl|http|urllib|urllib3|requests|httpx|aiohttp|websocket|websockets|smtplib|ftplib|poplib|imaplib|telnetlib|xmlrpc|paramiko|asyncssh|pycurl|httplib2|boto3|botocore|googleapiclient|google\\.cloud|google\\.analytics|google\\.auth\\.transport|openai|anthropic|grpc|kubernetes|psycopg|psycopg2|pymysql|MySQLdb|redis|pymongo|slack_sdk|github|gql|stripe";
-    // `from client import x`, or `client` anywhere in an `import a, b` list.
+    // `from client import x`, or `client` anywhere in an `import a, b` list,
+    // at the start of a line or after the colon of `if x: import client`.
     Regex::new(&format!(
-        r"(?m)^[ \t]*(?:from[ \t]+(?:{clients})\b|import[ \t]+(?:[\w.]+(?:[ \t]+as[ \t]+\w+)?[ \t]*,[ \t]*)*(?:{clients})\b)"
+        r"(?m)(?:^|:)[ \t]*(?:from[ \t]+(?:{clients})\b|import[ \t]+(?:[\w.]+(?:[ \t]+as[ \t]+\w+)?[ \t]*,[ \t]*)*(?:{clients})\b)"
     ))
     .unwrap()
 });
@@ -768,18 +769,6 @@ pub(in crate::pretool) fn standalone_clean(language: Language, path: &Path) -> b
 /// Whether a program this command launches uses the network.
 pub(super) fn uses_network(model: &CanonicalCommandV1, context: PathContext<'_>) -> bool {
     assess(model, context).iter().any(|found| found.network)
-}
-
-/// Whether a program the POSIX shell text `command` launches uses the
-/// network, for a caller that judges a projection of the text.
-pub(super) fn text_uses_network(command: &str, context: PathContext<'_>) -> bool {
-    crate::parse_command(&crate::CommandModelRequestV1 {
-        command: command.to_owned(),
-        dialect: "posix".to_owned(),
-        transport: "shell_string".to_owned(),
-        extraction_provenance: "guard-shell".to_owned(),
-    })
-    .is_ok_and(|model| uses_network(&model, context))
 }
 
 /// Whether inline source or a program fed on standard input uses the
