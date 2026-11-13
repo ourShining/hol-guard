@@ -766,11 +766,6 @@ pub(in crate::pretool) fn standalone_clean(language: Language, path: &Path) -> b
     fed::source_clean(language, source)
 }
 
-/// Whether a program this command launches uses the network.
-pub(super) fn uses_network(model: &CanonicalCommandV1, context: PathContext<'_>) -> bool {
-    assess(model, context).iter().any(|found| found.network)
-}
-
 /// Whether inline source or a program fed on standard input uses the
 /// network. A test script that imports a client usually stubs it, so script
 /// files are left to their own route.
