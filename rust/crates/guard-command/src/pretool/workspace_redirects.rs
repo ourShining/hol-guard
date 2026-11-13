@@ -63,6 +63,8 @@ fn project_scan(raw: &str) -> Option<(String, Vec<usize>, bool)> {
     let mut heredocs: Vec<(String, bool)> = Vec::new();
     // Whether each pending heredoc feeds Python its program.
     let mut programs: Vec<bool> = Vec::new();
+    // Whether a program fed to Python needs the script-file bar.
+    let mut wide = false;
     let (mut quote, mut escaped, mut removed) = (Quote::None, false, false);
     let mut names_files = false;
     let mut index = 0usize;
@@ -105,7 +107,7 @@ fn project_scan(raw: &str) -> Option<(String, Vec<usize>, bool)> {
             '\\' => escaped = true,
             '\n' if !heredocs.is_empty() => {
                 out.push('\n');
-                index = skip_bodies(&chars, index + 1, &mut heredocs, &mut programs)?;
+                index = skip_bodies(&chars, index + 1, &mut heredocs, &mut programs, &mut wide)?;
                 continue;
             }
             '<' if chars.get(index + 1) == Some(&'<') => {
@@ -115,6 +117,7 @@ fn project_scan(raw: &str) -> Option<(String, Vec<usize>, bool)> {
                 // checked once it is read.
                 let segment = heredoc_segment(&out)?.trim();
                 let program = python_stdin(segment);
+                wide |= program && !segment.ends_with(" -");
                 if segment != "cat" && !program && !heredoc_records_commit_message(segment) {
                     return None;
                 }
@@ -149,6 +152,9 @@ fn project_scan(raw: &str) -> Option<(String, Vec<usize>, bool)> {
     // projection unmodelled, which cost a redirect beside it the workspace
     // route the same command keeps without the redirect.
     let projected = crate::pretool::script_content::foreground_job(projected).unwrap_or(projected);
+    if wide && !crate::pretool::script_content::fed::python_alone(projected) {
+        return None;
+    }
     let map = map[lead..lead + projected.len()].to_vec();
     Some((projected.to_owned(), map, names_files))
 }

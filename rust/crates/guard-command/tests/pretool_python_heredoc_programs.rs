@@ -6,8 +6,9 @@
 //! that spelling was held for review as soon as the program imported a
 //! module, the project's own or the standard library's. The heredoc is now
 //! held to the bar the script file meets. A program that needs the network,
-//! names a credential store, declares its own source encoding, or is fed to
-//! an interpreter that also runs other code, keeps its review.
+//! names a credential store, declares its own source encoding, is fed to an
+//! interpreter that also runs other code, or is chained to other commands,
+//! keeps its review.
 
 use crate::git_helper_fixture as fixture;
 use fixture::FixtureCleanup;
@@ -77,6 +78,11 @@ fn a_probe_that_would_not_fit_the_sandbox_keeps_its_review() {
         "python3 -c 'import os' <<'EOF'\nimport pkg\nEOF",
         "python3 -i <<'EOF'\nimport pkg\nEOF",
         "python3 -I -c 'import os' <<'EOF'\nimport json\nEOF",
+        // Chained to other commands, a program that imports keeps its review.
+        "python3 <<'EOF'\nimport pkg\nEOF\ngit add -A",
+        "python3 - <<'EOF'\nimport subprocess\nEOF\nls",
+        "python3 <<'EOF' | tee out.txt; sh out.txt\nimport pkg\nEOF",
+        "python3 <<'EOF' | tee $OUT\nimport pkg\nEOF",
     ] {
         let (action, _) = outcome(&root, command);
         assert!(

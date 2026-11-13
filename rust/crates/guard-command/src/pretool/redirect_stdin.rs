@@ -281,12 +281,13 @@ fn plain_expansion(chars: &[char], start: usize) -> Option<usize> {
 
 /// Skips the bodies of the pending heredocs in order, as
 /// `skip_heredoc_bodies` does. A body that feeds Python must fit the sandbox
-/// ([`python_program_fits`]).
+/// ([`python_program_fits`]); `wide` is set once one uses more than builtins.
 pub(in crate::pretool) fn skip_bodies(
     chars: &[char],
     mut index: usize,
     heredocs: &mut Vec<(String, bool)>,
     programs: &mut Vec<bool>,
+    wide: &mut bool,
 ) -> Option<usize> {
     if heredocs.len() != programs.len() {
         return None;
@@ -302,8 +303,11 @@ pub(in crate::pretool) fn skip_bodies(
                 Some((body, _)) => body.split('\n').collect(),
                 None => Vec::new(),
             };
-            if !python_program_fits(&body) {
-                return None;
+            if !crate::native_command_controls::python_is_builtin_only(&body) {
+                *wide = true;
+                if !python_program_fits(&body) {
+                    return None;
+                }
             }
         }
     }
@@ -318,13 +322,13 @@ pub(in crate::pretool) fn skip_bodies(
 /// bounds what it does; the scan keeps a program that would fail there on
 /// review. The source has to be plain ASCII with no coding declaration, so
 /// the text scanned is the text Python runs.
+/// Such a program is only taken when it is the whole command
+/// (`script_content::fed::python_alone`).
 fn python_program_fits(body: &[&str]) -> bool {
-    crate::native_command_controls::python_is_builtin_only(body)
-        || (body
-            .iter()
-            .all(|row| row.is_ascii() && !row.to_ascii_lowercase().contains("coding"))
-            && crate::pretool::script_content::fed::source_clean(
-                crate::pretool::script_content::Language::Python,
-                &body.join("\n"),
-            ))
+    body.iter()
+        .all(|row| row.is_ascii() && !row.to_ascii_lowercase().contains("coding"))
+        && crate::pretool::script_content::fed::source_clean(
+            crate::pretool::script_content::Language::Python,
+            &body.join("\n"),
+        )
 }

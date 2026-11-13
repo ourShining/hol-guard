@@ -14,3 +14,22 @@ pub(in crate::pretool) fn source_clean(language: Language, source: &str) -> bool
     };
     !network && !CREDENTIAL_STORE.is_match(&code)
 }
+
+/// Whether the projected command is only the Python interpreter, or that
+/// interpreter piped to `tee` with plain file operands. A program that does
+/// more than builtins can is held to the script-file bar only there: chained
+/// to other commands it could prepare what they run, so a chain keeps the
+/// builtin-only bar.
+pub(in crate::pretool) fn python_alone(projected: &str) -> bool {
+    let (head, tail) = match projected.split_once('|') {
+        Some((head, tail)) => (head, Some(tail.trim())),
+        None => (projected, None),
+    };
+    crate::native_command_controls::python_stdin(head.trim())
+        && tail.is_none_or(|tail| {
+            tail.strip_prefix("tee ").is_some_and(|files| {
+                !files.trim().is_empty()
+                    && !files.contains(|c: char| ";&|<>$`(){}\n\\'\"*?[~".contains(c))
+            })
+        })
+}
