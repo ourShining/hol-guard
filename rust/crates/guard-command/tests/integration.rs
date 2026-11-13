@@ -142,6 +142,7 @@ pub mod pretool_git_outside_cwd;
 pub mod pretool_git_pager_config;
 pub mod pretool_git_read_climb;
 pub mod pretool_git_read_sequences;
+pub mod pretool_python_heredoc_programs;
 pub mod pretool_git_rebase_signing;
 pub mod pretool_git_redirect_commit_chain;
 pub mod pretool_git_ref_listings;

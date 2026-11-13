@@ -33,9 +33,9 @@ enum Quote {
 
 /// The command with every literal-path redirect, descriptor copy and quoted
 /// `cat` heredoc removed. A quoted heredoc may also carry the message of a
-/// `git commit -F -`, or feed `python3 -` a program
-/// that reads only builtins, which cannot start a program or load a module;
-/// the projection keeps `python3 -`, so every control still sees it. `None`
+/// `git commit -F -`, or feed `python3` or `python3 -` a program that meets
+/// the bar a script file in the workspace meets (`redirect_stdin`); the
+/// projection keeps the interpreter, so every control still sees it. `None`
 /// when nothing was removed or any redirect has another form: process
 /// substitution, a computed or home-relative target, a descriptor above 2, a
 /// herestring, or a heredoc fed to anything else.

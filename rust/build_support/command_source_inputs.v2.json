@@ -579,6 +579,7 @@
       "src/pretool/safe_writes.rs",
       "src/pretool/script_content.rs",
       "src/pretool/script_content/argv.rs",
+      "src/pretool/script_content/fed.rs",
       "src/pretool/script_content/launch.rs",
       "src/pretool/script_content/loopback.rs",
       "src/pretool/script_content/loopback_bases.rs",

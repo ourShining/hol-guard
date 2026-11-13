@@ -14,6 +14,7 @@ use std::sync::LazyLock;
 use regex::Regex;
 
 mod argv;
+pub(in crate::pretool) mod fed;
 mod launch;
 mod loopback;
 mod loopback_bases;
@@ -761,12 +762,7 @@ pub(in crate::pretool) fn standalone_clean(language: Language, path: &Path) -> b
     let [source] = sources.as_slice() else {
         return false;
     };
-    let code = code_lines(language, source);
-    let network = match language {
-        Language::Python => python_network(&code),
-        Language::Node => NODE_NETWORK.is_match(&code),
-    };
-    !network && !CREDENTIAL_STORE.is_match(&code)
+    fed::source_clean(language, source)
 }
 
 /// Whether a program this command launches uses the network.

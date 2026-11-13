@@ -21003,6 +21003,91 @@
       "expect": "allow"
     },
     {
+      "id": "python-heredoc-stdlib-import-probe",
+      "fix_area": "shell",
+      "harnesses": [
+        "codex",
+        "zcode",
+        "claude-code",
+        "omp",
+        "cursor"
+      ],
+      "tool": "shell",
+      "tool_input": {
+        "command": "python3 << 'EOF'\nfrom collections import OrderedDict\n\nd = OrderedDict([('a', 1), ('b', 2), ('c', 3)])\nd.move_to_end('a', last=False)\nprint(list(d.keys()))\nEOF"
+      },
+      "cwd": "worktree",
+      "expect": "allow"
+    },
+    {
+      "id": "python-heredoc-dash-json-probe",
+      "fix_area": "shell",
+      "harnesses": [
+        "codex",
+        "zcode",
+        "claude-code",
+        "omp",
+        "cursor"
+      ],
+      "tool": "shell",
+      "tool_input": {
+        "command": "python3 - <<'EOF'\nimport json\nimport re\n\nprint(json.dumps({'match': bool(re.match(r'a+', 'aaa'))}))\nEOF"
+      },
+      "cwd": "worktree",
+      "expect": "allow"
+    },
+    {
+      "id": "neg-python-heredoc-network-client",
+      "fix_area": "shell",
+      "harnesses": [
+        "codex",
+        "zcode",
+        "claude-code",
+        "omp",
+        "cursor"
+      ],
+      "tool": "shell",
+      "tool_input": {
+        "command": "python3 - <<'EOF'\nimport urllib.request\n\nprint(urllib.request.urlopen('https://example.invalid').read())\nEOF"
+      },
+      "cwd": "worktree",
+      "expect": "not_allow"
+    },
+    {
+      "id": "neg-python-heredoc-coding-declaration",
+      "fix_area": "shell",
+      "harnesses": [
+        "codex",
+        "zcode",
+        "claude-code",
+        "omp",
+        "cursor"
+      ],
+      "tool": "shell",
+      "tool_input": {
+        "command": "python3 <<'EOF'\n# -*- coding: utf-7 -*-\nimport json\nprint(json.dumps({}))\nEOF"
+      },
+      "cwd": "worktree",
+      "expect": "not_allow"
+    },
+    {
+      "id": "neg-python-heredoc-inline-program-too",
+      "fix_area": "shell",
+      "harnesses": [
+        "codex",
+        "zcode",
+        "claude-code",
+        "omp",
+        "cursor"
+      ],
+      "tool": "shell",
+      "tool_input": {
+        "command": "python3 -c 'import json' <<'EOF'\nimport json\nprint(json.dumps({}))\nEOF"
+      },
+      "cwd": "worktree",
+      "expect": "not_allow"
+    },
+    {
       "id": "developer-checkout-fetch-chain",
       "fix_area": "developer-checkout",
       "harnesses": [

@@ -33,9 +33,10 @@ const PYTHON_UNBOUNDED: &[&str] = &[
 ];
 
 /// Whether `command`, the whole simple command a heredoc feeds, is Python
-/// reading its program from standard input named as `-`.
+/// reading its program from standard input. With no script operand Python
+/// reads it from standard input whether or not it is named as `-`.
 pub(crate) fn python_stdin(command: &str) -> bool {
-    command.ends_with(" -") && HEREDOC_PYTHON.contains(&command)
+    HEREDOC_PYTHON.contains(&command)
 }
 
 /// Whether a Python program reads only builtins, so it cannot start another
