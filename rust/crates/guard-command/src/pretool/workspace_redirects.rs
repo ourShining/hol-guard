@@ -242,8 +242,13 @@ pub(super) fn contained(
     let stripped = project(command)?;
     // Removing an input redirect drops the program it feeds, so a program
     // that needs the network or a credential store, itself or through a
-    // local module it imports, keeps the review of the text as sent.
-    if crate::pretool::script_content::fed::text_needs_withheld(command, context) {
+    // local module it imports, or opens a system file the sandbox still lets
+    // it read, keeps the review of the text as sent.
+    if crate::pretool::script_content::fed::text_needs_withheld(command, context)
+        || crate::pretool::script_content::text_names_system_file(command, context)
+        || crate::pretool::script_content::text_spells_destructive_git(command, context)
+        || crate::pretool::literal_secrets::holds_literal_secret(command)
+    {
         return None;
     }
     let direct = super::redirect_projection::project(command, context);
