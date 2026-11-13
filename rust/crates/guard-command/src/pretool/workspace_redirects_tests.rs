@@ -117,6 +117,10 @@ fn a_quoted_heredoc_feeds_python_a_program_that_fits_the_sandbox() {
             "python3 - <<'EOF'\nimport subprocess\nsubprocess.run(['git','status'])\nEOF",
             "python3 -",
         ),
+        (
+            "python3 -I <<'EOF'\nimport glob\nprint(glob.glob('*'))\nEOF",
+            "python3 -I",
+        ),
     ] {
         assert_eq!(project(raw).as_deref(), Some(projected), "{raw:?}");
     }
@@ -134,7 +138,7 @@ fn a_quoted_heredoc_feeds_python_a_program_that_fits_the_sandbox() {
         "python3 - <<'EOF'\nprint(1)",
         "python3 - <<EOF\nprint(1)\nEOF",
         "PYTHONPATH=. python3 - <<'EOF'\nprint(1)\nEOF",
-        "python3 -I - <<'EOF'\nprint(1)\nEOF",
+        "python3 -E - <<'EOF'\nprint(1)\nEOF",
         "python3 -c 'print(1)' <<'EOF'\nprint(1)\nEOF",
         "node - <<'EOF'\nconsole.log(1)\nEOF",
         "sh - <<'EOF'\necho 1\nEOF",

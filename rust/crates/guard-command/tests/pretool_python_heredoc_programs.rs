@@ -58,6 +58,8 @@ fn a_probe_that_imports_modules_runs_in_the_workspace_sandbox() {
         "python <<'EOF'\nimport json\nprint(json.dumps({}))\nEOF",
         "python3 << 'EOF'\nprint(1)\nEOF",
         "python3 <<'EOF' | tee out.txt\nimport pkg\nprint(pkg.X)\nEOF",
+        "python3 -I << 'EOF'\nimport glob\nimport re\nprint(sorted(glob.glob('pkg/*.py')))\nEOF",
+        "python3 -I - <<'EOF'\nimport json\nprint(json.dumps([]))\nEOF",
     ] {
         let (action, reason) = outcome(&root, command);
         assert_eq!((action.as_str(), reason.as_str()), CONTAINED, "{command}");
@@ -74,6 +76,7 @@ fn a_probe_that_would_not_fit_the_sandbox_keeps_its_review() {
         "python3 <<'EOF'\n# -*- coding: utf-7 -*-\nimport json\nEOF",
         "python3 -c 'import os' <<'EOF'\nimport pkg\nEOF",
         "python3 -i <<'EOF'\nimport pkg\nEOF",
+        "python3 -I -c 'import os' <<'EOF'\nimport json\nEOF",
     ] {
         let (action, _) = outcome(&root, command);
         assert!(
