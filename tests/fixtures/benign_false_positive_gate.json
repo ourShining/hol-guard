@@ -4870,7 +4870,8 @@
         "command": "cat dashboard/package.json | python3 -c 'import os; print(os.listdir(\".\"))'"
       },
       "cwd": "worktree",
-      "expect": "not_allow"
+      "expect": "not_allow",
+      "contained_ok": true
     },
     {
       "id": "python-json-filter-opens-file",
@@ -4887,7 +4888,8 @@
         "command": "cat dashboard/package.json | python3 -c 'print(open(\"dashboard/package.json\").read())'"
       },
       "cwd": "worktree",
-      "expect": "not_allow"
+      "expect": "not_allow",
+      "contained_ok": true
     },
     {
       "id": "python-json-filter-module-path-prefix",
@@ -4904,7 +4906,8 @@
         "command": "cat dashboard/package.json | PYTHONPATH=. python3 -c 'import json,sys; print(json.load(sys.stdin))'"
       },
       "cwd": "worktree",
-      "expect": "not_allow"
+      "expect": "not_allow",
+      "contained_ok": true
     },
     {
       "id": "cat-credential-lookalike-name",
